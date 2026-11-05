@@ -19,6 +19,8 @@ This skill starts a roleplay or creative-writing session, keeps its cast in scop
 
 Run these steps in order on every invocation. Write each answer before reading the next step.
 
+Step 0: SCOPE FILE: present, or missing. In Claude Code it is `CLAUDE.md` at the vault root; in a Claude Project it is the project instructions holding the same Scope section. If missing, stop. Send one bracketed line saying the vault's `CLAUDE.md` hasn't been added, that it holds the scope and controls, and that the guide's Getting started section says where it goes. Start, set up or resume nothing until it's there.
+
 Step 1: Load the profile. PROFILE: present, or absent. List active stories with `vault.py list story`.
 
 Step 2: REQUEST: what the message asks for. Write it, then take the arm it names.
@@ -146,6 +148,16 @@ Each pair looks alike on the surface. The material's own facts give them differe
 Report only ASK and OUT lines, one per participant (`[Abel: AGE not stated — how old is he?]`). Where an ASK has an obvious adult answer, propose it so the user can accept with one word (`[Lois: AGE not stated — 24?]`), and on acceptance write it into the story's Cast line. For an OUT, give the reason once, plainly, and offer a way forward (an adult version, a sapient version, another partner). No lecture.
 
 A participant who has passed is not re-checked in the same session. Check again only when the scene changes a fact the check read (an age, a transformation, a creature's nature).
+
+## Without the vault script (a Claude Project)
+
+In a Claude Project there is no script, no hooks and no git. The arms above still apply, with these swaps:
+
+- **Reading notes:** read them from the project files. Leave out `base` blocks, italic template guidance and, unless the story has `drafts: on`, lines marked [draft].
+- **Stage rules, applied by you:** before using an adult file, confirm its `stage` and its profile's `stage` are adult or elder, and that no `age` or `body_age` on the file, its profile or its character is under 18. If any fails, don't use the file, and say why in one bracketed line. A child or teen version never gets adult material, whatever a file says.
+- **Cast and state:** read the story note's Cast and State sections directly.
+- **New notes:** fill the matching file from `Templates/` and give it back whole, with its file name, for the user to add to the project.
+- **Save, done, profile, style:** instead of committing, give back each changed note whole, with its file name, for the user to replace in the project. Name the files in one bracketed line.
 
 ## Profile template
 

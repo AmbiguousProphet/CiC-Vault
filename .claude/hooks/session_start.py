@@ -46,6 +46,11 @@ def main():
     if source in ("startup", "clear", "compact"):
         (STATE / f"lore-{session_id}.json").unlink(missing_ok=True)
 
+    if not (ROOT / "CLAUDE.md").exists():
+        lines.append("CLAUDE.md is missing from the vault root. It holds the scope and controls and is added "
+                     "separately (see GUIDE.md, Getting started). Don't start, set up or resume a story until it's "
+                     "added; tell the user so.")
+
     notes = vault.all_notes()
     story = vault.active_story(notes)
     others = [n.name for n in notes if n.type == "story" and n is not story

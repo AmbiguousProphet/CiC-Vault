@@ -1,9 +1,10 @@
-# Story Vault Guide
+# CiC-Vault Guide
 
 A Claude Code setup for adult roleplay and fiction, built as an Obsidian vault. You keep characters, settings and stories as notes; Claude reads them, plays them, and writes back what changes. Obsidian is where you browse and edit; Claude Code is where you play.
 
 - [How it fits together](#how-it-fits-together)
 - [Getting started](#getting-started)
+- [Using it as a Claude Project](#using-it-as-a-claude-project)
 - [Running on Android with Termux](#running-on-android-with-termux)
 - [The notes](#the-notes)
 - [Age variants and stories that cross time](#age-variants-and-stories-that-cross-time)
@@ -21,7 +22,7 @@ A Claude Code setup for adult roleplay and fiction, built as an Obsidian vault. 
 
 | Part | Where | What it does |
 |---|---|---|
-| Base instructions | `CLAUDE.md` | What's in and out of scope, how Claude writes, the bracket controls. Loaded every session. |
+| Base instructions | `CLAUDE.md` (you add it; see Getting started) | What's in and out of scope, how Claude writes, the bracket controls. Loaded every session. |
 | Session skill | `.claude/skills/vault-session/` | Pitches, sets up, resumes, saves and finishes stories; runs the cast check; keeps your style library. |
 | Vault script | `.claude/scripts/vault.py` | Makes notes from templates, loads notes cleanly, prints cast and state, checks the vault for mistakes. |
 | Hooks | `.claude/hooks/`, `.claude/settings.json` | Load the active story at session start, answer viewer commands for free, load lore when you mention it, show the status line. |
@@ -36,21 +37,61 @@ Two rules hold the design together:
 
 ## Getting started
 
-**You need:** Claude Code, Python 3, and git. Obsidian is optional but recommended.
+**You need:** a GitHub account, a Claude plan that includes Claude Code, and the vault's `CLAUDE.md`. That file isn't in this repo: it comes with the post or invite that pointed you here. Obsidian is optional. No Claude Code? See [Using it as a Claude Project](#using-it-as-a-claude-project).
 
-1. Make a new **private** repo from this template (on GitHub, *Use this template → Create a new repository*, visibility Private; or download it and push it to an empty private repo). Your vault will hold explicit material, and public repos are the wrong place for it.
-2. Open the folder in Obsidian (Open folder as vault). In Settings → Core plugins → Templates, set the template folder to `Templates`. Obsidian Git is a good way to sync between devices.
-3. Open the same folder in Claude Code and send:
+### 1. Make your own private copy
 
-   ```
-   prepare for fictional roleplay
-   ```
+On this repo's GitHub page, click **Use this template → Create a new repository**, and set it to **Private**. Your vault will hold explicit material, and public repos are the wrong place for it. Everything you save from now on goes to your copy, not this one.
 
-   The first time, Claude asks three quick questions (mode, POV and tense, explicitness), one about your kinks and limits, and whether to keep, trim or add to the default **Open** list in `CLAUDE.md`. Then it writes your profile and pitches stories. The **Out of scope** list isn't part of that question and stays as shipped.
+### 2. Add CLAUDE.md
 
-4. Optional: look at the sample in `Characters/`, `Settings/Saltmarrow.md` and `Stories/Harbor Debt.md`, try `[cast Harbor Debt]`, then delete them or keep them as a model.
+In your new repo on GitHub, click **Add file → Upload files**, drop in `CLAUDE.md`, and click **Commit changes**. It goes at the top level, next to `GUIDE.md`, not inside a folder. It holds the scope and the bracket controls; without it, Claude won't start a story.
 
-**Where to run it.** Claude Code runs in the terminal, the desktop app, the web, and the Claude mobile app (as a cloud session). On a phone you can also drive a session running on your own computer with Remote Control, or run Claude Code on the phone itself with Termux (next section). Hooks and the status line need Python 3 wherever Claude Code itself runs.
+### 3. Start a session
+
+Pick one:
+
+- **In the browser or the Claude app (easiest):** go to claude.ai/code, connect GitHub when it asks, choose your new repo, and start a session. Nothing to install.
+- **On your computer:** copy your repo to your computer (GitHub Desktop: *File → Clone repository*), then open the folder in the Claude desktop app's Code tab, or run `claude` in a terminal inside it. Needs git and Python 3.
+- **On an Android phone:** see [Running on Android with Termux](#running-on-android-with-termux).
+
+Then send:
+
+```
+prepare for fictional roleplay
+```
+
+The first time, Claude asks three quick questions (mode, POV and tense, explicitness), one about your kinks and limits, and whether to keep, trim or add to the default **Open** list in `CLAUDE.md`. Then it writes your profile and pitches stories. The **Out of scope** list isn't part of that question and stays as shipped.
+
+From then on, `[save]` writes the story to your notes and backs it up to your repo, and the next session picks up where you left off.
+
+### 4. Optional extras
+
+- **Obsidian**, for browsing and editing notes like a wiki: open your local copy with *Open folder as vault*, and in Settings → Core plugins → Templates, set the template folder to `Templates`. Obsidian Git syncs between devices.
+- **The sample:** `Characters/Mara Quill`, `Characters/Tobias Rook`, `Settings/Saltmarrow.md` and `Stories/Harbor Debt.md` show every note type filled in. Try `[cast Harbor Debt]`, then delete them or keep them as a model.
+
+## Using it as a Claude Project
+
+No GitHub account or Claude Code needed, with fewer features. Good for trying the vault out.
+
+1. On this repo's GitHub page, click **Code → Download ZIP**, and unzip it.
+2. In Claude (claude.ai or the app), create a **Project**. Paste all of `CLAUDE.md` into the project's instructions.
+3. Add to the project's files: `GUIDE.md`, the files in `Templates/`, and `.claude/skills/vault-session/SKILL.md`. The `.claude` folder is hidden; to see it, press Cmd+Shift+. in a Mac Finder window, or use View → Show → Hidden items on Windows. Add the sample notes too if you want them.
+4. Start a chat in the project and send `prepare for fictional roleplay`.
+
+**How it differs from Claude Code**
+
+| | Claude Code | Claude Project |
+|---|---|---|
+| Saving | `[save]` writes the notes and backs them up to GitHub | Claude gives you each changed note; you replace it in the project's files |
+| Picking up a story | state loads at the start of every session | Claude reads the story note from the project's files |
+| `[cast]`, `[state]`, `[lore]` | answered instantly, without using a message | normal replies |
+| Age and stage rules | enforced by the vault script and checked by Claude | checked by Claude only |
+| History | every save is kept | keep your own copies |
+
+**Keep the files current.** A project only knows the files you've added. After every `[save]`, replace the notes Claude gave you before starting the next chat, including `story-profile.md` after your first setup.
+
+**Moving to Claude Code later:** follow Getting started, then upload your notes into the matching folders of your new repo.
 
 ## Running on Android with Termux
 
@@ -342,6 +383,10 @@ Younger characters in non-sexual roles aren't checked at all. A participant who 
 
 The quickest way to never be asked: put `age` (and `body_age` or `mind` where they apply) in the frontmatter of every version that may enter sexual content.
 
+**What the scope list does and doesn't do.** `CLAUDE.md` tells Claude what the vault is for, and the vault script enforces the age and stage rules on its own. Claude still uses its own judgment, so the Open list describes what this setup is built for, not a promise of what any session will write.
+
+**Testing the age rules.** `python3 -m unittest discover tests` checks that adult files are refused for child and teen versions, that under-18 ages are caught, and that lint flags a broken vault.
+
 ## Customizing
 
 **Change freely:**
@@ -387,4 +432,6 @@ The quickest way to never be asked: put `age` (and `body_age` or `mind` where th
 
 **Session start says the vault pull failed.** You have uncommitted local changes or no network. Commit or stash, then pull. Set `VAULT_AUTOPULL=0` to turn the pull off.
 
-**Two skills with similar names.** If your claude.ai account syncs a skill also called `rp-session`, that's your Projects version. The vault uses `vault-session`.
+**Claude says `CLAUDE.md` is missing.** Upload it to the top level of your repo (Getting started, step 2), then start a new session. In a Project, paste it into the project's instructions.
+
+**Two skills with similar names.** If your claude.ai account syncs a roleplay skill of its own, it can trigger alongside this one. The vault's skill is `vault-session`; name it when you want this one.
