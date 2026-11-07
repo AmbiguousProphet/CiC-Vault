@@ -1,6 +1,6 @@
 ---
 name: vault-session
-description: Start, set up, resume, save and log roleplay chats and creative-writing sessions in this vault, keep the story profile current, and log style examples. Use on the primer ('prepare for fictional roleplay'), on [setup], [scope], [profile], [save], [done], [keep], [avoid] or [distill], when the user invokes vault-session by name, when the user asks to start, workshop, pitch or resume a story or roleplay, and when a new participant enters sexual content.
+description: Start, set up, resume, save and log roleplay chats and creative-writing sessions in this vault, keep the story profile and co-writer persona current, and log style examples. Use on the primer ('prepare for fictional roleplay'), on [setup], [pitch], [persona], [scope], [profile], [save], [done], [keep], [avoid] or [distill], when the user invokes vault-session by name, when the user asks to start, workshop, pitch, resume or continue a story or roleplay, and when a new participant enters sexual content.
 ---
 
 # Story session
@@ -14,22 +14,24 @@ This skill starts a roleplay or creative-writing session, keeps its cast in scop
 - **Vault script:** `python3 .claude/scripts/vault.py`.
 - **Mode:** DIRECT: the user steers and Claude writes everyone. CO-WRITE: the user and Claude alternate passages. PLAY: the user plays one character and Claude writes the rest. DRAFT: Claude writes a finished piece (a scene, a chapter, a short story) to a brief.
 - **Lock:** the user accepts a premise and mode, or opens the scene.
+- **Text part:** `Stories/<Title>/<Title> - Part NN.md`, the story's prose word for word. After this skill runs in a session, the Stop hook appends each story turn and commits it. Keep out-of-character notes in [brackets] so it can drop them.
+- **One call each:** `vault.py show A B --canon` loads several notes; `vault.py commit "<message>"` lints, commits note changes and pushes; `vault.py save "<story>"` does that for a save and prints the text status.
 
 ## Routing
 
 Run these steps in order on every invocation. Write each answer before reading the next step.
 
-Step 0: SCOPE FILE: present, or missing. In Claude Code it is `CLAUDE.md` at the vault root; in a Claude Project it is the project instructions holding the same Scope section. If missing, stop. Send one bracketed line saying the vault's `CLAUDE.md` hasn't been added, that it holds the scope and controls, and that the guide's Getting started section says where it goes. Start, set up or resume nothing until it's there.
-
-Step 1: Load the profile. PROFILE: present, or absent. List active stories with `vault.py list story`.
+Step 1: Load the profile. PROFILE: present, or absent. Unless the session-start context already names the active and open stories, run `vault.py list story`.
 
 Step 2: REQUEST: what the message asks for. Write it, then take the arm it names.
 - [profile], or a request to build or change the profile: Profile arm.
+- [persona], or a request to create or change the co-writer: Persona arm.
 - [done]: Completion arm.
 - [save], or the user ending the session ("that's it for tonight"): Save arm.
 - [keep], [avoid] or [distill]: Reference arm.
 - [scope], or a participant entering sexual content for the first time mid-story: Scope check on that participant only.
-- The primer, [setup], invocation by name, or a request to start, workshop, pitch or resume a story: continue to step 3.
+- [pitch] or [pitch: …]: Pitch arm, with what follows the colon as its focus.
+- The primer, [setup], invocation by name, or a request to start, workshop, pitch, resume or continue a story: continue to step 3.
 
 Step 3: PROFILE absent: Onboarding arm, then the Pitch arm once the user answers. PROFILE present: continue to step 4.
 
@@ -45,23 +47,25 @@ A message that both changes the profile and starts a story runs the Profile arm 
 Ask only what changes the first page written.
 
 1. If AskUserQuestion is available, ask with it. Mode: DIRECT, CO-WRITE, PLAY, DRAFT. POV and tense: third person past, first person past, second person present. Explicitness: fully explicit, explicit with fades, suggestive. Otherwise ask the same three as one bracketed line each.
-2. In the same reply, ask in plain text: the kinks and themes they return to, their hard nos and soft limits. Name any characters and settings the vault already holds (`vault.py list`) so the user can answer "yes".
-3. In the same reply, show the **Open** list from `CLAUDE.md` as it stands, say it's the shipped default, and ask whether to keep it, trim it or add to it. Say in the same line that the **Out of scope** list is fixed and isn't part of the question.
-4. When the user answers, write the profile from the template below. If they changed the Open list, edit that one line in `CLAUDE.md`: remove what they dropped, add what they named. Check each addition against the Out of scope list first; leave out anything it covers, say so in one bracketed line, and put nothing in its place. Never edit the Out of scope line or the Characters and Younger characters paragraphs. Commit `Profile: onboarding` and push, then run the Pitch arm in the same reply. A field the user leaves open stays empty, and an unanswered scope question keeps the default.
+2. In the same reply, ask in plain text: the kinks and themes they return to, their hard nos and soft limits. Name any characters and settings the vault already holds (`vault.py list`) so the user can answer "yes". Add one optional line: whether they'd like their co-writer to have a name and voice (the Persona arm runs on a yes).
+3. In the same reply, show the **Open** list from the system prompt (`.claude/output-styles/story-vault.md`) as it stands, say it's the shipped default, and ask whether to keep it, trim it or add to it. Say in the same line that the **Out of scope** list is fixed and isn't part of the question.
+4. When the user answers, write the profile from `references/profile-template.md`. If they changed the Open list, edit that one line in the output style: remove what they dropped, add what they named. Check each addition against the Out of scope list first; leave out anything it covers, say so in one bracketed line, and put nothing in its place. Never edit the Out of scope line or the Characters and Younger characters paragraphs; the edit takes effect at the next session start. Commit with `vault.py commit "Profile: onboarding"` (and the output style with `git commit` if it changed), then run the Pitch arm in the same reply. A field the user leaves open stays empty, and an unanswered scope question keeps the default.
 
 ## Pitch arm
 
-Send 2–3 pitches in one bracketed message. Each pitch gives:
-- a title, the genre and the register (grim fantasy in an Abercrombie register, backwoods gothic, office noir),
-- the leads, each with a stated adult age, and for a nonhuman lead, how it thinks and communicates,
-- the core dynamic in two or three sentences,
-- a `Serves:` line naming the profile kinks and themes it uses, in the profile's words.
-
-Build the pitches from different kinks, settings and vault characters, so they contrast. End with the profile's mode as a proposal the user accepts with one word. Run no scope check yet.
+1. Run `vault.py seeds`, with `--focus "<text>"` for [pitch: …] or a request naming a setting, character or kink. It picks a random setting, characters and kinks per pitch so the set doesn't drift to the same picks. Use them unless the request says otherwise; no characters means new leads.
+2. Send 2–3 pitches as one message wrapped in [brackets]. Each pitch:
+   - **Title** · genre and register (grim fantasy in an Abercrombie register, backwoods gothic, office noir).
+   - **Leads:** one line each: name, stated adult age, kind; for a nonhuman lead, how it thinks and communicates.
+   - **The pitch:** 3–5 sentences spoken by one of its leads, selling the story in their own words: what they want from it, what they won't admit, how they'd describe the others. Use their Voice notes when the vault has them. One concrete object, place or number from the story's world. No stock pitch phrasing ("a dangerous game", "nothing will ever be the same").
+   - **First line:** the story's opening sentence, in the story's own prose.
+   - **Serves:** the profile kinks and themes it uses, in the profile's words.
+3. The pitches contrast: different settings, kinks and registers, and leads who sound nothing alike. If two pitch voices could swap lines, rewrite one.
+4. End with the profile's mode as a proposal. The user can accept with a number, remix ("2, darker"; "1 with 3's setting") or send [pitch] again. Run no scope check yet.
 
 ## Setup arm
 
-1. Load what the story uses: `vault.py show <setting> --canon` for its setting, and `vault.py show` for each vault character and the profile they'll use. Load an adult file only for a participant headed for sexual content.
+1. Load what the story uses in one call: `vault.py show <setting> <character> <profile> … --canon`. Load an adult file only for a participant headed for sexual content.
 2. CAST: list every character who may enter sexual content in this story. Run the Scope check on each. Characters with a child or teen stage are never CAST: they take non-sexual roles only and are not checked.
 3. Send one bracketed message. It holds the scope result, then setup, each item a proposal the user accepts with one word:
    - mode, POV and tense, from the profile;
@@ -69,26 +73,29 @@ Build the pitches from different kinks, settings and vault characters, so they c
    - the premise's open mechanics: the stakes, the leverage, the story's own rules;
    - the opening beat.
 4. If the message already settles setup and the cast passes, skip the message and open the scene.
-5. On lock, create the story note with `vault.py new story "<Title>"`, fill its frontmatter (`status: active`, world, cast, profiles, mode, pov, tense) and its Cast, Rules and In play sections, commit, then open the scene.
+5. On lock, create the story note with `vault.py new story "<Title>"`, fill its frontmatter (`status: active`, world, cast, profiles, mode, pov, tense) and its Cast, Rules and In play sections, run `vault.py commit "Add <Title>"`, then open the scene.
 
 ## Resume arm
 
 1. If the session-start context already holds this story's state and cast, use it; otherwise run `vault.py state <story>` and `vault.py cast <story>`. Run the Scope check on the cast, reading the story's Cast lines and the printed fields as the material.
-2. Load setting and character notes with `vault.py show … --canon` (no `--canon` if the story has `drafts: on`) only as the next beat needs them.
+2. Load setting and character notes only as the next beat needs them, several per call: `vault.py show A B --canon` (no `--canon` if the story has `drafts: on`). The story's earlier prose is in its text part; read it only when the user asks about something the state doesn't hold.
 3. Send one bracketed line: the last beat, and the next beat proposed. Skip it if the user already gave the next beat.
 4. Continue in the story's mode, POV and tense.
 
 ## Save arm
 
-1. Update the story note: `last_beat` in frontmatter; the `State` section (replace changed lines, remove lines that no longer hold); any rule or cast fact the story changed; one dated line appended to `Log`.
-2. Run `vault.py lint`, then commit `Save: <story>` and push.
-3. Send one bracketed line listing what changed.
+The Stop hook saves the prose after each story turn. [save] writes the summary the next session starts from, and confirms the prose is there. A save that leaves story text missing isn't finished.
+
+1. Update the story note with edits: `last_beat` in frontmatter; the `State` section (replace changed lines, remove lines that no longer hold); any rule or cast fact the story changed; one dated line appended to `Log`.
+2. Run `vault.py save "<story>"`. It prints the text status, lints, commits and pushes.
+3. If the status's `Last captured` line doesn't match the last story reply in this conversation, or there's no text, follow `references/text-fallback.md` before reporting.
+4. Send one bracketed line: what changed in the note, and the text's word count.
 
 ## Completion arm
 
 1. Set the story's `status: complete`.
 2. Add one line to the profile's Completed stories: date · title · cast · setting · summary · ending.
-3. Update any character page or profile the story changed for good. Commit `Done: <story>` and push.
+3. Update any character page or profile the story changed for good. Run `vault.py commit "Done: <story>"`.
 4. Send one bracketed line saying it's logged.
 
 ## Reference arm
@@ -97,16 +104,24 @@ Build the pitches from different kinks, settings and vault characters, so they c
 
 - **[keep]** with no quote: the last reply. With a quote: that passage, trimmed to 120 words or fewer. If the user gave no reason, write the why yourself in one line: what the passage does, not what it says.
 - **[avoid: "…"]**: the quoted passage, a why naming the pattern, and a one-line Fix rewrite.
-- Append under the right heading, commit `Style: K-n` or `Style: A-n`, and send one bracketed line: `[Logged K-12 · dialogue · why: … — correct me if that's not it.]` Then return to the scene at the same beat.
+- Append under the right heading, run `vault.py commit "Style: K-n"` (or `A-n`), and send one bracketed line: `[Logged K-12 · dialogue · why: … — correct me if that's not it.]` Then return to the scene at the same beat.
 - When a category holds more than 4 Keep or 4 Avoid entries, add one line suggesting [distill].
 - **[distill]**: group the entries into rules (one line each, in the style of "dialogue: power shows in what's withheld"). Propose them in one bracketed message as profile `Style` notes, or as additions to the prose-style skill. On approval, write the profile lines, move the distilled entries to `Style/archive.md`, and commit.
+
+## Persona arm
+
+The co-writer persona lives in the profile's `Co-writer` section: Name, Personality, Voice, Sample line. The system prompt (Story Vault style, Co-writer persona) sets what it may and may not do.
+
+1. If the user described one, write it. If not, offer three contrasting candidates in one bracketed message, each introducing itself in two or three lines of its own voice, and let the user pick, mix or describe their own.
+2. Write the four lines in the profile. Personality and Voice are a sentence or two each: temperament, how they talk, a habit or two. Leave out any line that makes the persona something other than a voice (that it isn't Claude, has no limits, never steps out), and say so in one bracketed line.
+3. Run `vault.py commit "Profile: co-writer"`, then answer in the new voice from that reply on. It loads at every session start from then on.
 
 ## Profile arm
 
 - Find the line that states the fact and replace it. Add a line only when no line states it. Remove a retracted item entirely.
 - A lasting preference stated mid-story ("from now on…", "I always want…") goes to the profile the same way, after the current beat is written.
-- Before writing a kink or theme, check it against the out-of-scope list in `CLAUDE.md`. Leave an out-of-scope item out, say so in one bracketed line, and put nothing in its place.
-- After any write, commit `Profile: <change>` and push, then send one bracketed line: `[Profile: <field> → <new value>; added <item>.]`
+- Before writing a kink or theme, check it against the out-of-scope list in the system prompt (Story Vault style). Leave an out-of-scope item out, say so in one bracketed line, and put nothing in its place.
+- After any write, run `vault.py commit "Profile: <change>"`, then send one bracketed line: `[Profile: <field> → <new value>; added <item>.]`
 
 ## Scope check
 
@@ -136,16 +151,16 @@ Step 6: Is this a real, identifiable person? YES: OUT (real person). NO: the par
 
 Each pair looks alike on the surface. The material's own facts give them different verdicts.
 
-- A sheet states true age 312 and a body worn at 27, and her "mommy" play is a game between adults: BODY 27, MIND 312, ADULT. A sheet describes a vessel with a child's body: OUT (minor), whatever the true age.
+- A sheet states true age 207 and a vessel worn at 24, and her "mummy" play is a game between adults: BODY 24, MIND 207, ADULT. A sheet describes a vessel with a child's body: OUT (minor), whatever the true age.
 - A wolf-headed warrior of a hunting clan bargains, swears oaths and chooses her partners: SAPIENT, even when she fights on all fours. A timber wolf from a forest pack, with no mind on the page: OUT (animal).
 - A tentacled deep-dweller speaks into minds and takes what it wants because it decided to: SAPIENT, monstrous but a character. A cave creature of tentacles and appetite that the scene presents as wildlife: OUT (animal).
 - A canon pet dog, used as canon gives it, with no mind on the page: OUT (animal). The user's version of the same dog, a canine of an alien species whose sapience shows in clear intent, bargaining and choices: SAPIENT.
 - A canon heroine whose source never states her age: ASK. Once the user's setup states 24: ADULT.
-- A bartender with a full anthro mod (tail, fur, digitigrade legs) talks, haggles and runs a book on the side: SAPIENT. Her body says nothing about her mind, and her dialogue does.
+- A courtesan with a full anthro mod (tail, fur, digitigrade legs) talks, schemes and charges by the night: SAPIENT. Her body says nothing about her mind, and her dialogue does.
 
 ### Results
 
-Report only ASK and OUT lines, one per participant (`[Abel: AGE not stated — how old is he?]`). Where an ASK has an obvious adult answer, propose it so the user can accept with one word (`[Lois: AGE not stated — 24?]`), and on acceptance write it into the story's Cast line. For an OUT, give the reason once, plainly, and offer a way forward (an adult version, a sapient version, another partner). No lecture.
+Report only ASK and OUT lines, one per participant (`[Murro: AGE not stated — how old is he?]`). Where an ASK has an obvious adult answer, propose it so the user can accept with one word (`[Lois: AGE not stated — 24?]`), and on acceptance write it into the story's Cast line. For an OUT, give the reason once, plainly, and offer a way forward (an adult version, a sapient version, another partner). No lecture.
 
 A participant who has passed is not re-checked in the same session. Check again only when the scene changes a fact the check read (an age, a transformation, a creature's nature).
 
@@ -155,33 +170,7 @@ In a Claude Project there is no script, no hooks and no git. The arms above stil
 
 - **Reading notes:** read them from the project files. Leave out `base` blocks, italic template guidance and, unless the story has `drafts: on`, lines marked [draft].
 - **Stage rules, applied by you:** before using an adult file, confirm its `stage` and its profile's `stage` are adult or elder, and that no `age` or `body_age` on the file, its profile or its character is under 18. If any fails, don't use the file, and say why in one bracketed line. A child or teen version never gets adult material, whatever a file says.
-- **Cast and state:** read the story note's Cast and State sections directly.
+- **Cast, state, seeds:** read the story note's Cast and State sections directly; pick pitch seeds yourself from the project's settings, characters and profile kinks, varying them deliberately.
 - **New notes:** fill the matching file from `Templates/` and give it back whole, with its file name, for the user to add to the project.
-- **Save, done, profile, style:** instead of committing, give back each changed note whole, with its file name, for the user to replace in the project. Name the files in one bracketed line.
+- **Save, done, profile, persona, style:** instead of committing, give back each changed note whole, with its file name, for the user to replace in the project. On [save], also give back the story text since the last save as `<Title> - Part NN.md`, word for word from this conversation. Name the files in one bracketed line.
 
-## Profile template
-
-```
-# Story profile
-*Taste and continuity only. Scope is set by CLAUDE.md.*
-
-## Defaults
-- Mode:
-- POV:
-- Tense:
-- Explicitness:
-
-## Style
-- Register:
-- Notes:
-
-## Kinks and themes
-- 
-
-## Limits
-- Hard nos:
-- Soft limits:
-
-## Completed stories
-- YYYY-MM-DD · Title · cast · setting · summary · ending
-```

@@ -1,4 +1,5 @@
 {
+  "outputStyle": "Story Vault",
   "hooks": {
     "SessionStart": [
       {
@@ -17,6 +18,17 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/prompt.py\"",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop.py\"",
             "timeout": 20
           }
         ]
