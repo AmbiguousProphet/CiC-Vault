@@ -441,6 +441,8 @@ git commit -m "Update vault machinery from CiC-Vault" && git push
 
 That leaves `Characters/`, `Settings/`, `Stories/`, `Style/` and `story-profile.md` alone. It also leaves out `.claude/output-styles/`, since onboarding may have edited your Open list there; to take a new version of the style, add `.claude/output-styles` to the list and redo your Open list edits. Changes load at the next session start.
 
+**Coming from the older layout,** where you uploaded `CLAUDE.md` yourself? Add `.claude/output-styles` to the list this once. The new `CLAUDE.md` replaces your old one, and the scope moves into the output style; if you'd edited the Open list, redo that edit in `.claude/output-styles/story-vault.md`.
+
 ## Troubleshooting
 
 **What lint messages mean**
