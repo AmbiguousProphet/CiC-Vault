@@ -17,6 +17,8 @@ The Story Vault output style leaves out Claude Code's built-in software-engineer
 | Hooks | `.claude/hooks/*.py`, `.claude/settings.json` | Session start, prompt (viewer commands, lore), stop (story text autosave), status line. They fail open. |
 | Skills | `.claude/skills/<name>/SKILL.md` + `references/` | References load only when the skill reads them. |
 | Templates | `Templates/`, `Templates/Legacy/` | `vault.py new` reads them; frontmatter fields are load-bearing. |
+| Co-writers | `Co-writers/*.md`, `Templates/Co-writer.md`, `.claude/ui/personas.json` | One persona per file. The hooks pick and remember the session's choice; `personas.json` is generated on commit for other apps. |
+| Vault app | `app/index.html`, `build_index()` in `vault.py` | One file, no build step, read-only. Reads `.claude/ui/vault-index.json` (schema 2) locally or from GitHub. Test it with `vault.py app` and a headless browser at desktop and phone width. |
 | Docs | `GUIDE.md`, `README.md` | User-facing. Update them when behavior changes. |
 | Modules | `Modules/<Name>/` | Drop-in settings for other vaults; they defer to the host vault's scope. |
 

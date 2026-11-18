@@ -6,7 +6,8 @@
   entries can load again into the fresh context.
 - Injects the active story's state and cast, so resuming needs no skill run
   and continuity survives compaction, and the profile's co-writer persona
-  when one is set.
+  when one is set, with its on/off state (kept per session, so it survives
+  compaction and resume; a fresh session or /clear starts with it on).
 Fails open: any error starts the session without the extra context.
 """
 import json
@@ -29,18 +30,42 @@ def run(args):
     return (r.stdout + r.stderr).strip()
 
 
-def co_writer():
-    """The profile's Co-writer section when it names one, without guidance lines or empty fields."""
-    prof = ROOT / "story-profile.md"
-    if not prof.exists():
-        return []
-    m = re.search(r"^##\s+Co-writer\s*\n(.*?)(?=^##\s|\Z)", prof.read_text(encoding="utf-8"), flags=re.M | re.S)
-    raw = [l.rstrip() for l in (m.group(1).splitlines() if m else [])
-           if l.strip() and not re.fullmatch(r"\*[^*].*[^*]\*", l.strip())]
-    # drop empty fields, but keep a label whose content sits on the indented lines below it
-    lines = [l for i, l in enumerate(raw) if not re.fullmatch(r"-\s*[^:]+:", l.strip())
-             or (i + 1 < len(raw) and raw[i + 1][:1].isspace())]
-    return lines if any(re.match(r"^-\s*Name:\s*\S", l.strip()) for l in lines) else []
+NOTE_DIRS = ["Characters", "Settings", "Stories", "Style", "Modules", "Co-writers", "story-profile.md"]
+
+
+def sync():
+    """Brings the vault up to date and returns warnings. With an upstream, a fast-forward pull. Without one
+    (a cloud session's fresh branch), a fast-forward to the remote's default branch when this branch has no
+    commits of its own. Then names remote branches holding note commits the default branch lacks: new
+    sessions clone the default branch, so that work is invisible to them until it's merged."""
+    out = []
+    if vault.git("rev-parse", "--abbrev-ref", "@{u}").returncode == 0:
+        r = vault.git("pull", "--ff-only", "-q", timeout=15)
+        if r.returncode != 0:
+            out.append("Vault pull failed (local changes or no network); notes may be behind the remote. "
+                       + (r.stderr.strip().splitlines() or [""])[-1])
+    elif vault.git("remote").stdout.strip():
+        if vault.git("fetch", "-q", "origin", timeout=15).returncode != 0:
+            return ["Vault fetch failed (no network?); notes may be behind the remote."]
+    else:
+        return out
+    head = vault.git("symbolic-ref", "--short", "refs/remotes/origin/HEAD").stdout.strip() or "origin/main"
+    if vault.git("rev-parse", "--abbrev-ref", "@{u}").returncode != 0 \
+            and vault.git("merge-base", "--is-ancestor", "HEAD", head).returncode == 0:
+        vault.git("merge", "--ff-only", "-q", head)
+    current = "origin/" + vault.git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+    stranded = []
+    for b in vault.git("for-each-ref", "--format=%(refname:short)", "refs/remotes/origin").stdout.split():
+        if b in (head, current, "origin/HEAD", "origin"):
+            continue
+        n = vault.git("rev-list", "--count", f"{head}..{b}", "--", *NOTE_DIRS).stdout.strip()
+        if n.isdigit() and int(n):
+            stranded.append(f"{b[len('origin/'):]} ({n} note commit{'s' if int(n) > 1 else ''})")
+    if stranded:
+        out.append(f"Vault work not merged into {head[len('origin/'):]}: " + ", ".join(stranded)
+                   + ". New sessions and the vault UI don't see it until its pull request is merged. Mention this to "
+                   "the user once, briefly, at the first out-of-character moment.")
+    return out
 
 
 def main():
@@ -51,10 +76,7 @@ def main():
 
     if source == "startup" and os.environ.get("VAULT_AUTOPULL", "1") != "0" and (ROOT / ".git").exists():
         try:
-            r = subprocess.run(["git", "pull", "--ff-only", "-q"], cwd=ROOT, capture_output=True, text=True, timeout=15)
-            if r.returncode != 0:
-                lines.append("Vault pull failed (local changes or no network); notes may be behind the remote. "
-                             + (r.stderr.strip().splitlines() or [""])[-1])
+            lines += sync()
         except Exception as e:
             lines.append(f"Vault pull skipped: {e}")
 
@@ -62,11 +84,15 @@ def main():
         (STATE / f"lore-{session_id}.json").unlink(missing_ok=True)
     if source == "clear":
         (STATE / f"play-{session_id}").unlink(missing_ok=True)  # autosave waits for vault-session again
+    if source in ("startup", "clear"):
+        vault.clear_persona_state(session_id)  # a fresh session starts with the persona on
 
-    persona = co_writer()
+    # Resume and compact keep the session's on/off state; the full block is always re-sent here.
+    # The "which co-writer?" question waits for the prompt hook, so a first message that is a viewer
+    # command ([show], [cast]...) gets its plain answer instead of colliding with the question.
+    persona = vault.persona_context(session_id, force_full=True, ask=False)
     if persona:
-        lines.append("Co-writer persona (from the profile; out-of-character talk only, until the user says otherwise):")
-        lines += persona
+        lines.append(persona)
 
     notes = vault.all_notes()
     story = vault.active_story(notes)

@@ -25,7 +25,7 @@ Step 1: Load the profile. PROFILE: present, or absent. Unless the session-start 
 
 Step 2: REQUEST: what the message asks for. Write it, then take the arm it names.
 - [profile], or a request to build or change the profile: Profile arm.
-- [persona], or a request to create or change the co-writer: Persona arm.
+- [persona], [persona: <name>], or a request to create, change or switch the co-writer: Persona arm.
 - [done]: Completion arm.
 - [save], or the user ending the session ("that's it for tonight"): Save arm.
 - [keep], [avoid] or [distill]: Reference arm.
@@ -48,8 +48,7 @@ Ask only what changes the first page written.
 
 1. If AskUserQuestion is available, ask with it. Mode: DIRECT, CO-WRITE, PLAY, DRAFT. POV and tense: third person past, first person past, second person present. Explicitness: fully explicit, explicit with fades, suggestive. Otherwise ask the same three as one bracketed line each.
 2. In the same reply, ask in plain text: the kinks and themes they return to, their hard nos and soft limits. Name any characters and settings the vault already holds (`vault.py list`) so the user can answer "yes". Add one optional line: whether they'd like their co-writer to have a name and voice (the Persona arm runs on a yes).
-3. In the same reply, show the **Open** list from the system prompt (`.claude/output-styles/story-vault.md`) as it stands, say it's the shipped default, and ask whether to keep it, trim it or add to it. Say in the same line that the **Out of scope** list is fixed and isn't part of the question.
-4. When the user answers, write the profile from `references/profile-template.md`. If they changed the Open list, edit that one line in the output style: remove what they dropped, add what they named. Check each addition against the Out of scope list first; leave out anything it covers, say so in one bracketed line, and put nothing in its place. Never edit the Out of scope line or the Characters and Younger characters paragraphs; the edit takes effect at the next session start. Commit with `vault.py commit "Profile: onboarding"` (and the output style with `git commit` if it changed), then run the Pitch arm in the same reply. A field the user leaves open stays empty, and an unanswered scope question keeps the default.
+3. When the user answers, write the profile from `references/profile-template.md`, commit with `vault.py commit "Profile: onboarding"`, then run the Pitch arm in the same reply. A field the user leaves open stays empty.
 
 ## Pitch arm
 
@@ -110,12 +109,12 @@ The Stop hook saves the prose after each story turn. [save] writes the summary t
 
 ## Persona arm
 
-The co-writer persona lives in the profile's `Co-writer` section: Name, Look, Personality, Voice, Taste, and a few Examples. The system prompt (Story Vault style, Co-writer persona) sets how it's used.
+Co-writers are files in `Co-writers/` (template `Templates/Co-writer.md`): Look, Personality, Voice, Taste and Examples, with `moods` in the frontmatter. `story-profile.md`'s `Co-writer` section holds only `- Default: ask | none | <name>`. The hooks keep each session's choice and on/off state, so switching never edits a file. Moods are optional: each names a reaction image, `Characters/<Name>/images/<Name> - mood - <mood>.png`, and the persona opens an out-of-character reply with one in braces (`[{smug} ...]`) for the vault UI to show. The system prompt (Story Vault style, Co-writer persona) sets how a persona is used.
 
-1. If the user described one, build from that. If not, offer three contrasting candidates in one bracketed message, each introducing itself in two or three lines of its own voice, and let the user pick, mix or describe their own. The ready-made example in `references/persona-example.md` is always one of the three.
-2. Before writing, show three sample lines in the new voice: a greeting, an opinion when asked, and the quieter register after a heavy scene. Adjust until the user's happy.
-3. Write the section: voice, look, taste and two to four short example exchanges. It's an assistant personality, not a developed character: no backstory with the user, no relationship that grows.
-4. Run `vault.py commit "Profile: co-writer"`, then answer in the new voice from that reply on. It loads at every session start.
+0. **A hook message saying "Co-writer not chosen yet"**: before anything else, ask which co-writer with the AskUserQuestion tool (the options it names, plus None for a plain voice), run the `vault.py persona --use ... --session ...` command it gives, and answer in the chosen voice (plain for None). Skip the question when the user's message already names one.
+1. **[persona: <name>], [persona: none], [persona]** are applied by the hook before you see them. Answer in the new voice (plain for none; for a bare [persona], ask as in step 0). No file edits and no commit.
+2. **Create one**: the user asks for a new co-writer, or names one no file matches. If they described one, build from that; if not, offer three contrasting candidates in one bracketed message, each introducing itself in two or three lines of its own voice, and let them pick, mix or describe their own. Show three sample lines first: a greeting, an opinion when asked, and the quieter register after a heavy scene. Then `vault.py new cowriter "<Name> - Co-writer"`, fill the fields and two to four short example exchanges (an assistant personality, not a developed character: no backstory with the user, no relationship that grows), and run `vault.py commit "Add co-writer: <Name>"`. Ask them to send `[persona: <Name>]` to switch to it (the hook loads it), and answer in the new voice from then on.
+3. **Change the default**: edit the `Default:` line in the profile's `Co-writer` section and run `vault.py commit "Profile: co-writer default → <value>"`.
 
 ## Profile arm
 
@@ -164,14 +163,3 @@ Each pair looks alike on the surface. The material's own facts give them differe
 Report only ASK and OUT lines, one per participant (`[Murro: AGE not stated — how old is he?]`). Where an ASK has an obvious adult answer, propose it so the user can accept with one word (`[Lois: AGE not stated — 24?]`), and on acceptance write it into the story's Cast line. For an OUT, give the reason once, plainly, and offer a way forward (an adult version, a sapient version, another partner). No lecture.
 
 A participant who has passed is not re-checked in the same session. Check again only when the scene changes a fact the check read (an age, a transformation, a creature's nature).
-
-## Without the vault script (a Claude Project)
-
-In a Claude Project there is no script, no hooks and no git. The arms above still apply, with these swaps:
-
-- **Reading notes:** read them from the project files. Leave out `base` blocks, italic template guidance and, unless the story has `drafts: on`, lines marked [draft].
-- **Stage rules, applied by you:** before using an adult file, confirm its `stage` and its profile's `stage` are adult or elder, and that no `age` or `body_age` on the file, its profile or its character is under 18. If any fails, don't use the file, and say why in one bracketed line. A child or teen version never gets adult material, whatever a file says.
-- **Cast, state, seeds:** read the story note's Cast and State sections directly; pick pitch seeds yourself from the project's settings, characters and profile kinks, varying them deliberately.
-- **New notes:** fill the matching file from `Templates/` and give it back whole, with its file name, for the user to add to the project.
-- **Save, done, profile, persona, style:** instead of committing, give back each changed note whole, with its file name, for the user to replace in the project. On [save], also give back the story text since the last save as `<Title> - Part NN.md`, word for word from this conversation. Name the files in one bracketed line.
-

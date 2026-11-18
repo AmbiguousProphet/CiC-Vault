@@ -1,6 +1,6 @@
 # Anti-patterns: what to cut, what to do instead
 
-Read once per session, before the first story reply. §1–16 are pulp-voice's original list; §17–26 fold in the shared slop-rigor and authorship skills where they add something §1–16 don't cover. Rewrite the beat when you hit one; a cliché's synonym is still a cliché.
+Read once per session, before the first story reply. §1–16 are the user's own list (pulp-voice v21); §17–26 fold in the shared slop-rigor and authorship skills where they add something §1–16 don't cover. Rewrite the beat when you hit one; a cliché's synonym is still a cliché.
 
 **Where these apply.** Narration and italic thought. Dialogue may use a character's own trade words and habits when the story has shown that expertise or worldview: a blacksmith says *tempered*, a clerk says *deposit*, a mechanic says *autopilot*. The mechanic's plane can be on autopilot; his grief can't. A character written to talk in a banned register (the therapy-fluent modern, the corporate lifer) may talk that way, and a character who really is a machine may think like one.
 
@@ -134,8 +134,8 @@ Comparisons aren't banned. They're on a very short leash:
 - Concrete and mundane beats poetic. "The way you know a bus
   schedule" works. "Like a prayer she no longer believed in" doesn't.
 - *The way* comparisons follow the same rule: concrete and mundane
-  pass ("the way you know a bus schedule" is an approved example from
-  the skill's calibration); poetic ones fail, and so does a dash-appositive that
+  pass ("the way you know a bus schedule" is the user's own approved
+  example); poetic ones fail, and so does a dash-appositive that
   elaborates the comparison into a small poem.
 - Land it and get out. Never extend a comparison past its initial
   image. The second line exploring what a metaphor means is where

@@ -7,7 +7,7 @@ description: The vault's prose skill. Shapes every story turn, DRAFT piece, scen
 
 ## Why this exists
 
-Default prose leans conceptual, hedged and emotionally *narrated* rather than *felt*: abstract metaphor standing in for a real image, feelings named instead of shown, conflict resolved a little too cleanly. The diagnosis this skill grew from, worth keeping word for word: "The more serious you try to be, the more nonsense prose you try." This skill applies to every piece of prose, not only requests that say "pulp" or "gritty". Genre and tone shift; the fix stays the same: ground it, don't narrate it.
+Default prose leans conceptual, hedged and emotionally *narrated* rather than *felt*: abstract metaphor standing in for a real image, feelings named instead of shown, conflict resolved a little too cleanly. The user's diagnosis, worth keeping word for word: "The more serious you try to be, the more nonsense prose you try." This skill applies to every piece of prose, not only requests that say "pulp" or "gritty". Genre and tone shift; the fix stays the same: ground it, don't narrate it.
 
 ## Load once, read references when their moment comes
 

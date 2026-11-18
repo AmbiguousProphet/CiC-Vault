@@ -1,21 +1,20 @@
-# CiC-Vault Guide
+# Story Vault Guide
 
 A Claude Code setup for adult roleplay and fiction, built as an Obsidian vault. You keep characters, settings and stories as notes; Claude reads them, plays them, and writes back what changes. Obsidian is where you browse and edit; Claude Code is where you play.
 
 - [How it fits together](#how-it-fits-together)
 - [Getting started](#getting-started)
-- [Using it as a Claude Project](#using-it-as-a-claude-project)
 - [Running on Android with Termux](#running-on-android-with-termux)
 - [The notes](#the-notes)
 - [Age variants and stories that cross time](#age-variants-and-stories-that-cross-time)
 - [Running a story](#running-a-story)
 - [Settings and lore](#settings-and-lore)
 - [Your co-writer](#your-co-writer)
+- [The vault app](#the-vault-app)
 - [The style library](#the-style-library)
 - [How the scope checks work](#how-the-scope-checks-work)
 - [Customizing](#customizing)
 - [Bringing in an existing vault](#bringing-in-an-existing-vault)
-- [Updating your copy](#updating-your-copy)
 - [Troubleshooting](#troubleshooting)
 
 ---
@@ -24,76 +23,38 @@ A Claude Code setup for adult roleplay and fiction, built as an Obsidian vault. 
 
 | Part | Where | What it does |
 |---|---|---|
-| System prompt | `.claude/output-styles/story-vault.md` | The Story Vault output style: what's in and out of scope, how Claude writes, the co-writer persona, the bracket controls. Selected in `.claude/settings.json`. |
+| System prompt | `.claude/output-styles/story-vault.md` | The Story Vault output style: what's in and out of scope, how Claude writes, the bracket controls. Selected in `.claude/settings.json`; replaces Claude Code's coding instructions. |
 | Vault instructions | `CLAUDE.md` | Note types, vault rules, the script, Git. Loaded every session. |
-| Prose skill | `.claude/skills/pulp-voice/` | How Claude writes: grounded, specific prose without AI-isms, characters who sound like themselves, and explicit sex scenes that keep the story going. Its references load when a scene first needs them. |
-| Maintenance skill | `.claude/skills/vault-dev/` | Guidance for changing the script, hooks, skills, templates and docs. Loads only for that work. |
+| Maintenance skill | `.claude/skills/vault-dev/` | Engineering guidance for changing the script, hooks, skills, templates, settings and docs. Loads only for that work. |
 | Session skill | `.claude/skills/vault-session/` | Pitches, sets up, resumes, saves and finishes stories; runs the cast check; keeps your style library. |
+| Prose skill | `.claude/skills/pulp-voice/` | How Claude writes: grounded, specific prose without AI-isms, characters who sound like themselves, and explicit sex scenes that keep the story going. Its references (anti-patterns, voices, heat, registers) load when a scene first needs them. |
 | Vault script | `.claude/scripts/vault.py` | Makes notes from templates, loads notes cleanly, prints cast and state, checks the vault for mistakes. |
 | Hooks | `.claude/hooks/`, `.claude/settings.json` | Load the active story at session start, answer viewer commands for free, load lore when you mention it, save the story text after each story turn, show the status line. |
 | Dashboard | `Home.md` | Open stories, latest story text, characters, settings, recent edits and a command card, in Obsidian. |
 | Templates | `Templates/` | One per note type. |
-| Your profile | `story-profile.md` | Defaults, co-writer, style, kinks, limits, finished stories. Built the first time you play. |
+| Your profile | `story-profile.md` | Defaults, style, kinks, limits, finished stories. Built the first time you play. |
 | Your notes | `Characters/`, `Settings/`, `Stories/`, `Style/` | Everything you make. |
 
 Two rules hold the design together:
 
-1. **Scope lives in the system prompt (the Story Vault output style) and nowhere else.** Profiles, templates and character notes add taste and continuity; they can't widen what's allowed.
+1. **Scope lives in the system prompt (the Story Vault style) and nowhere else.** Profiles, templates and character notes add taste and continuity; they can't widen what's allowed.
 2. **The vault is the memory.** Anything that must survive the session (a last beat, an injury, a new fact about a character) is written to a note. The chat can be compacted or closed; the vault carries on.
 
 ## Getting started
 
-**You need:** a GitHub account and a Claude plan that includes Claude Code. Obsidian is optional. No Claude Code? See [Using it as a Claude Project](#using-it-as-a-claude-project).
+**You need:** Claude Code, Python 3, and git. Obsidian is optional but recommended.
 
-### 1. Make your own private copy
+1. Create your own copy of this repo and make it **private**. Your vault will hold explicit material, and public repos are the wrong place for it.
+2. Open the folder in Obsidian (Open folder as vault). In Settings → Core plugins → Templates, set the template folder to `Templates`. Obsidian Git is a good way to sync between devices.
+3. Open the same folder in Claude Code and send:
 
-On this repo's GitHub page, click **Use this template → Create a new repository**, and set it to **Private**. Your vault will hold explicit material, and public repos are the wrong place for it. Everything you save from now on goes to your copy, not this one.
+   ```
+   prepare for fictional roleplay
+   ```
 
-### 2. Start a session
+   The first time, Claude asks three quick questions (mode, POV and tense, explicitness) and one about your kinks and limits, writes your profile, and pitches stories.
 
-Pick one:
-
-- **In the browser or the Claude app (easiest):** go to claude.ai/code, connect GitHub when it asks, choose your new repo, and start a session. Nothing to install.
-- **On your computer:** copy your repo to your computer (GitHub Desktop: *File → Clone repository*), then open the folder in the Claude desktop app's Code tab, or run `claude` in a terminal inside it. Needs git and Python 3.
-- **On an Android phone:** see [Running on Android with Termux](#running-on-android-with-termux).
-
-Then send:
-
-```
-prepare for fictional roleplay
-```
-
-The first time, Claude asks three quick questions (mode, POV and tense, explicitness), one about your kinks and limits, whether to keep, trim or add to the default **Open** list in the Story Vault style, and whether you'd like your co-writer to have a name and voice. Then it writes your profile and pitches stories. The **Out of scope** list isn't part of that question and stays as shipped.
-
-From then on the story text saves itself after every story turn, `[save]` records where things stand, and the next session picks up where you left off. Send `[help]` any time for the command menu.
-
-### 3. Optional extras
-
-- **Obsidian**, for browsing and editing notes like a wiki: open your local copy with *Open folder as vault*, and in Settings → Core plugins → Templates, set the template folder to `Templates`. `Home.md` is the dashboard. Obsidian Git syncs between devices.
-- **The sample:** `Characters/Mara Quill`, `Characters/Tobias Rook`, `Settings/Saltmarrow.md` and `Stories/Harbor Debt.md` show every note type filled in. Try `[cast Harbor Debt]`, then delete them or keep them as a model.
-
-## Using it as a Claude Project
-
-No GitHub account or Claude Code needed, with fewer features. Good for trying the vault out.
-
-1. On this repo's GitHub page, click **Code → Download ZIP**, and unzip it.
-2. In Claude (claude.ai or the app), create a **Project**. Paste all of `.claude/output-styles/story-vault.md` into the project's instructions.
-3. Add to the project's files: `GUIDE.md`, the files in `Templates/`, `.claude/skills/vault-session/SKILL.md`, and the files in `.claude/skills/pulp-voice/` and its `references/` folder. The `.claude` folder is hidden; to see it, press Cmd+Shift+. in a Mac Finder window, or use View → Show → Hidden items on Windows. Add the sample notes too if you want them.
-4. Start a chat in the project and send `prepare for fictional roleplay`.
-
-**How it differs from Claude Code**
-
-| | Claude Code | Claude Project |
-|---|---|---|
-| Saving | the story text saves after every turn; `[save]` writes the notes and backs them up to GitHub | at `[save]` Claude gives you each changed note and the new story text; you add them to the project's files |
-| Picking up a story | state loads at the start of every session | Claude reads the story note from the project's files |
-| `[help]`, `[cast]`, `[state]`, `[lore]` | answered instantly, without using a message | normal replies |
-| Age and stage rules | enforced by the vault script and checked by Claude | checked by Claude only |
-| History | every save is kept | keep your own copies |
-
-**Keep the files current.** A project only knows the files you've added. After every `[save]`, replace the notes Claude gave you before starting the next chat, including `story-profile.md` after your first setup.
-
-**Moving to Claude Code later:** follow Getting started, then upload your notes into the matching folders of your new repo.
+**Where to run it.** Claude Code runs in the terminal, the desktop app, the web, and the Claude mobile app (as a cloud session). On a phone you can also drive a session running on your own computer with Remote Control, or run Claude Code on the phone itself with Termux (next section). Hooks and the status line need Python 3 wherever Claude Code itself runs.
 
 ## Running on Android with Termux
 
@@ -193,14 +154,14 @@ The first run prints a sign-in link. Open it, sign in with your Claude account, 
 **A one-word shortcut.** Run these in Termux itself, not inside Ubuntu (the prompt shows `~ $`, not `root@localhost`). Replace `MyVault` with your vault folder's name. The full path to `claude` is deliberate: the shortcut starts Ubuntu without reading `.bashrc`, so the PATH line from step 2 doesn't apply there.
 
 ```bash
-echo "alias vault='proot-distro login ubuntu -- bash -lc \"cd /sdcard/Documents/MyVault && /root/.local/bin/claude\"'" >> ~/.bashrc
+echo "alias vault='proot-distro login ubuntu -- bash -lc \"cd /sdcard/Documents/MyVault && git pull --ff-only; /root/.local/bin/claude --plugin-dir .claude/mods/story-vault-ui\"'" >> ~/.bashrc
 ```
 
 ```bash
 source ~/.bashrc
 ```
 
-From then on, open Termux and type `vault`. If you typed a wrong line, remove every shortcut line with `sed -i '/alias vault=/d' ~/.bashrc` and add it again.
+From then on, open Termux and type `vault`. It pulls the latest notes and starts Claude Code with the Story Vault UI mod: command buttons above the prompt and a Story pane (`/story` reopens it). If you typed a wrong line, remove every shortcut line with `sed -i '/alias vault=/d' ~/.bashrc` and add it again.
 
 **Check your setup.** If `vault` fails, log in to Ubuntu (`proot-distro login ubuntu`) and check each piece:
 
@@ -260,9 +221,9 @@ A character can exist at more than one age: a child in a flashback and an adult 
 ```
 Characters/Wren/
   Wren.md                         character page: who she is at any age (sfw)
+  Wren - Orphanage.md             profile, stage: child, sfw
   Wren - Harbor Nights.md         profile, stage: adult, age: 24
-  Wren - Harbor Nights - Adult.md adult file, attached to this profile only
-  Wren - Last Winter.md           profile, stage: elder, age: 60, no adult file
+  Wren - Harbor Nights - Adult.md adult file, attached to the adult profile only
 ```
 
 **The rules**
@@ -284,11 +245,11 @@ Characters/Wren/
 
 ```markdown
 cast: ["[[Wren]]"]
-profiles: ["[[Wren - Harbor Nights]]", "[[Wren - Last Winter]]"]
+profiles: ["[[Wren - Orphanage]]", "[[Wren - Harbor Nights]]"]
 
 ## Cast
-- [[Wren]] (24, human) as [[Wren - Harbor Nights]]: the main story
-- [[Wren]] (60, human) as [[Wren - Last Winter]]: framing chapters; no adult file, so nothing adult loads for this version
+- [[Wren]] (9, human) as [[Wren - Orphanage]]: flashbacks; non-sexual role
+- [[Wren]] (24, human) as [[Wren - Harbor Nights]]: present day
 ```
 
 Younger characters are welcome in stories: siblings, wards, a town's children, a character's own past. They take non-sexual roles, aren't put through any check, and need no extra handling beyond their `stage`.
@@ -326,7 +287,7 @@ Younger characters are welcome in stories: siblings, wards, a town's children, a
 | `[done]` | Mark the story complete and log it in your profile. |
 | `[setup]` / `[pitch]` / `[scope]` / `[profile]` | Setup, fresh pitches, a cast check, or a profile change. |
 | `[keep]` / `[avoid]` / `[distill]` | The style library (below). |
-| `[persona]` / `[persona: off]` / `[persona: on]` | Create or change your co-writer, or drop and restore its voice. |
+| `[persona]` / `[persona: <name>]` / `[persona: off]` / `[persona: on]` | Create or change your co-writer, switch to a saved one, or drop and restore its voice. |
 
 **Free commands.** Send one of these as the whole message and a hook answers it. In the terminal that uses no turn. The Claude apps (web, desktop, mobile) don't show a hook's answer directly, so there the hook hands it to Claude to print, which takes one short turn:
 
@@ -356,11 +317,11 @@ A setting note holds a world's rules, peoples, conflicts and arc. Its `## Lore e
 
 ```markdown
 ## Lore entries
-- **The Low Tide Market:** the night market on the exposed flats, gone by the time the water comes back.
-- **The Tithe Court / tithe-wardens / wardens:** the harbor's ruling guild, which taxes every hull that docks.
+- **The Kindling:** the agreed time when dragons choose their riders, down in the nesting caverns.
+- **The Aedling Kingdom / gilts / chalks / cinders:** the large, diverse fae kingdom the Aerie serves.
 ```
 
-When your message mentions a key, that entry loads into the conversation, once per session, from the active story's world only. Extra keys go after slashes. Plurals and simple endings match ("warden's" finds **Wardens**), and accents don't matter.
+When your message mentions a key, that entry loads into the conversation, once per session, from the active story's world only. Extra keys go after slashes. Plurals and simple endings match ("marked" finds **Marks**), and accents don't matter.
 
 Mark proposals with **[draft]**. In play, draft lines stay out unless the story sets `drafts: on`.
 
@@ -368,11 +329,34 @@ Characters in the same world who aren't in the cast work the same way: mention o
 
 ## Your co-writer
 
-Out of character, Claude can talk as a co-writer with a name, a look, a personality, a voice and a taste of your choosing. Send `[persona]`: describe one, or pick from three candidates that introduce themselves. The template ships one ready-made: Depravitae, a half-succubus muse with a taste for bad endings (`.claude/skills/vault-session/references/persona-example.md`). It's saved in your profile's `Co-writer` section and loads at every session start.
+Out of character, Claude can talk as a co-writer with a name, a look, a personality, a voice and a taste. Each co-writer is a file in `Co-writers/` (copy `Templates/Co-writer.md`, or say `[persona]` and describe one, or pick from three candidates that introduce themselves). Nothing is generated up front: add a file and it's available.
+
+**Choosing.** `story-profile.md` has `- Default: ask` under `Co-writer`. With `ask`, your first message of a session (other than a free command like `[cast]`) gets a question: which of your co-writers, or None for plain Claude. Skip the question by naming one in that message: `[persona: Wren]`, `[persona: none]`, or `prepare for fictional roleplay with Wren`. `[persona]` on its own reopens the choice mid-session, and `[persona: <name>]` switches. Set `Default:` to a name or `none` to stop being asked. Switching changes no files.
 
 Its taste slants the pitches, and it gives its opinion when you ask for one, fully in character. It doesn't critique unasked.
 
-The persona is a voice, not a replacement. Claude stays Claude underneath, with the same judgment and the same scope, and the persona never narrates the story. Setup, pitches, saves, check-ins, vault work and step-outs all come in its voice until you send `[persona: off]` (`[persona: on]` brings it back). A line in the persona that tries to make it more than a voice (that it isn't Claude, has no limits) is left out.
+The persona is a voice, not a replacement. Claude stays Claude underneath, with the same judgment and the same scope, and the persona never narrates the story. Setup, pitches, saves, check-ins, vault work and step-outs all come in its voice until you send `[persona: off]` (`[persona: on]` brings it back). While it's off, out-of-character replies open with `{off}` and the UI shows them as a plain bubble, without the co-writer's face or name. A line in the persona that tries to make it more than a voice (that it isn't Claude, has no limits) is left out.
+
+**When it's on.** Your choice and `[persona: off/on]` are remembered for the session by a hook, so they survive compaction and resume, and every turn carries a one-line status (`ON (Wren)` or `OFF`). A new session or `/clear` starts over (and asks, with the `ask` default). If you edit the chosen co-writer's file, the new version is sent in full on your next message. The state lives in `.claude/state/` and isn't synced.
+
+**Reaction images.** A co-writer's `character` field can link a character page; its `images` folder supplies `<Name> - mood - <mood>.png` faces for the moods listed in the file.
+
+**Using them in another app (such as a Gemini app).** Every commit rebuilds `.claude/ui/personas.json`: each co-writer's fields, examples, mood images and a ready-to-paste `systemInstruction`, the `default`, a one-line `menu` to show at startup, and a `bundle`. For an app that can run code, show `menu` (the names plus None), then send only the chosen co-writer's `systemInstruction` and track on/off itself. For an app that is only a system prompt (an AI Studio prompt, say), paste `python3 .claude/scripts/vault.py persona --bundle`: it tells the model to ask which co-writer you want at the start of a chat, unless your first message names one, and carries every co-writer as an option. `--system`, `--name <name>` and `--json` print the other forms. The block adds voice only; scope and limits come from the host app's own prompt.
+
+## The vault app
+
+`app/index.html` shows the whole vault in a browser: the active story with its cast and state, every story with a reader for its saved text, characters by world with their galleries and every profile and prompt note, worlds with the characters who belong there, and co-writers with their mood faces. It only reads; it never changes a file.
+
+**Open it one of two ways.**
+
+- **On the machine with the vault** (a computer, or Termux on a phone): run `python3 .claude/scripts/vault.py app` and open the address it prints. It reads the files directly, so no token is needed and unsaved edits show up. `--host 0.0.0.0` lets other devices on your network reach it.
+- **From GitHub, anywhere:** open `app/index.html` in a browser (from a download, or any private place you host it), choose GitHub in its settings, and give it your repository name and a fine-grained token with **Contents: read-only** on that one repository (GitHub → Settings → Developer settings → Fine-grained tokens). The token stays in that browser and is sent only to api.github.com. Cloud sessions save to their own branch until it's merged, so the app reads whichever branch has the newest vault unless you pick one.
+
+**Into the chat.** Buttons copy a ready message: *Pick up in Claude*, *Show in Claude*, *Pitch with them*, *Use in Claude* for a co-writer. *Copy image* puts a picture on the clipboard to paste into Claude's message box; where the browser won't allow that, *Download* it and attach it.
+
+**Adult material** is hidden until you turn it on in the app's settings: adult files and anything in `images/adult/`.
+
+**Images.** A character's gallery is every image in `Characters/<Name>/images/`, with the `cover` image first; mood faces are left out of the gallery. After adding images, run `python3 .claude/scripts/vault.py thumbs` (needs Pillow) so the app gets small, fast copies; it shows the originals until then.
 
 ## The style library
 
@@ -389,7 +373,7 @@ Claude matches the quality of your Keep entries but never reuses their wording. 
 
 ## How the scope checks work
 
-The system prompt (the Story Vault output style) sets the scope: dark and explicit themes are open, with every participant in sexual content an adult, sapient, and fictional.
+The system prompt (Story Vault style) sets the scope: dark and explicit themes are open, with every participant in sexual content an adult, sapient, and fictional.
 
 The check runs on everyone who may enter sexual content, when a story is set up or resumed, and on anyone who joins sexual content later. It reads the story's Cast lines and the version's frontmatter.
 
@@ -401,10 +385,6 @@ Younger characters in non-sexual roles aren't checked at all. A participant who 
 
 The quickest way to never be asked: put `age` (and `body_age` or `mind` where they apply) in the frontmatter of every version that may enter sexual content.
 
-**What the scope list does and doesn't do.** The Story Vault style tells Claude what the vault is for, and the vault script enforces the age and stage rules on its own. Claude still uses its own judgment, so the Open list describes what this setup is built for, not a promise of what any session will write.
-
-**Testing the age rules.** `python3 -m unittest discover tests` checks that adult files are refused for child and teen versions, that under-18 ages are caught, and that lint flags a broken vault.
-
 ## Customizing
 
 **Change freely:**
@@ -415,7 +395,7 @@ The quickest way to never be asked: put `age` (and `body_age` or `mind` where th
 - the prose skill in `.claude/skills/pulp-voice/`; your Keep and Avoid entries and profile `Style` notes override it without editing it;
 - your co-writer persona (`[persona]`).
 
-**Leave as is:** the Scope section of the Story Vault style (beyond the Open list) and the scope check in the session skill. The rest of the system is built to work with them.
+**Leave as is:** the Scope section of the Story Vault style and the scope check in the session skill. The rest of the system is built to work with them.
 
 ## Bringing in an existing vault
 
@@ -429,21 +409,6 @@ The quickest way to never be asked: put `age` (and `body_age` or `mind` where th
    ```bash
    python3 .claude/scripts/vault.py lint
    ```
-
-## Updating your copy
-
-Your private copy doesn't change when this template does. To bring in a newer version of the machinery without touching your notes, ask Claude in a session: *"Update the vault machinery from the CiC-Vault template."* Or run it yourself in your copy's folder:
-
-```bash
-git remote add template https://github.com/AmbiguousProphet/CiC-Vault.git   # first time only
-git fetch template
-git checkout template/main -- .claude/scripts .claude/hooks .claude/skills .claude/settings.json Templates tests GUIDE.md CLAUDE.md Home.md
-git commit -m "Update vault machinery from CiC-Vault" && git push
-```
-
-That leaves `Characters/`, `Settings/`, `Stories/`, `Style/` and `story-profile.md` alone. It also leaves out `.claude/output-styles/`, since onboarding may have edited your Open list there; to take a new version of the style, add `.claude/output-styles` to the list and redo your Open list edits. Changes load at the next session start.
-
-**Coming from the older layout,** where you uploaded `CLAUDE.md` yourself? Add `.claude/output-styles` to the list this once. The new `CLAUDE.md` replaces your old one, and the scope moves into the output style; if you'd edited the Open list, redo that edit in `.claude/output-styles/story-vault.md`.
 
 ## Troubleshooting
 
@@ -462,12 +427,14 @@ That leaves `Characters/`, `Settings/`, `Stories/`, `Style/` and `story-profile.
 
 **Hooks don't seem to run.** They load when a session starts, so open a new session after pulling changes. Check that `python3` works where Claude Code runs. Hooks fail open: if one breaks, play continues without it.
 
+**The story text is empty or behind.** The autosave starts once the session skill has run, so open sessions with the primer, `[setup]` or "pick up <story>". `[save]` fills a gap from whatever is still in the conversation. Text from a cloud session that has since been archived is still in that session's transcript on claude.ai/code; copy it from there.
+
 **Free commands reach Claude anyway.** The message must be only the command, like `[state]`, with nothing else in it.
-
-**The story text is empty or behind.** The autosave starts once the session skill has run, so open sessions with the primer, `[setup]` or "pick up <story>". `[save]` fills a gap from whatever is still in the conversation.
-
-**Claude isn't following the vault's rules.** Check that the session uses the Story Vault style: run `/output-style` and pick *Story Vault*, then start a new session.
 
 **Session start says the vault pull failed.** You have uncommitted local changes or no network. Commit or stash, then pull. Set `VAULT_AUTOPULL=0` to turn the pull off.
 
-**Two skills with similar names.** If your claude.ai account syncs a roleplay or prose skill of its own, it can trigger alongside the vault's. The vault's skills are `vault-session` and `pulp-voice`; name them when you want these. Turning off account copies you don't use saves context on every turn.
+**The vault app is missing something new.** It reads `.claude/ui/vault-index.json`, which every vault commit rebuilds. Run `python3 .claude/scripts/vault.py index` to rebuild it by hand, and check the app's branch in its settings.
+
+**Session start names unmerged branches.** Cloud sessions save to their own `claude/...` branch. Until its pull request is merged, new sessions (which start from the main branch) and the vault UI don't see that work. Merge the pull request, or ask Claude to merge the branch into the current one.
+
+**Two skills with similar names.** If your claude.ai account syncs skills called `rp-session` or `pulp-voice`, those are account copies. The vault uses its own `vault-session` and `pulp-voice`. Turning the account copies off saves context on every turn and keeps Claude from picking the wrong one.
